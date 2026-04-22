@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
 from utils.db import init_db, add_deployment, get_all_deployments
 from utils.port_manager import get_next_available_port
-import os
-import re
 import shutil
 import subprocess
+import re
 from pathlib import Path
 
 app = Flask(__name__)
@@ -12,16 +11,13 @@ app = Flask(__name__)
 # Initialize database
 init_db()
 
-# Base paths inside the dashboard container
+# Base paths inside dashboard container
 BASE_DIR = Path("/app")
 DEPLOYMENTS_DIR = BASE_DIR / "deployments"
+NGINX_ROUTES_DIR = Path("/nginx-routes")
 
 
 def sanitize_name(name: str) -> str:
-    """
-    Convert project name into safe lowercase slug for folder/image/container names.
-    Example: 'Quiz App 1' -> 'quiz-app-1'
-    """
     name = name.strip().lower()
     name = re.sub(r"[^a-z0-9]+", "-", name)
     name = re.sub(r"-+", "-", name).strip("-")
@@ -29,10 +25,6 @@ def sanitize_name(name: str) -> str:
 
 
 def create_project_files(project_dir: Path, project_name: str, student_name: str) -> None:
-    """
-    Create a simple deployable Flask app inside deployments/<project_name>.
-    This is safer than copying the dashboard project into itself.
-    """
     templates_dir = project_dir / "templates"
     static_dir = project_dir / "static"
 
@@ -55,7 +47,9 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
 """
 
-    requirements_txt = "Flask\ngunicorn\n"
+    requirements_txt = """Flask
+gunicorn
+"""
 
     dockerfile = """FROM python:3.10-slim
 
@@ -128,10 +122,22 @@ h1 {
     (static_dir / "style.css").write_text(style_css, encoding="utf-8")
 
 
+def create_nginx_route(project_name: str, assigned_port: int) -> None:
+    NGINX_ROUTES_DIR.mkdir(parents=True, exist_ok=True)
+    route_file = NGINX_ROUTES_DIR / f"{project_name}.conf"
+
+    config = f"""
+location /apps/{project_name}/ {{
+    proxy_pass http://localhost:{assigned_port}/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}}
+""".strip()
+
+    route_file.write_text(config, encoding="utf-8")
+
+
 def run_command(command: list[str]) -> subprocess.CompletedProcess:
-    """
-    Run shell command and capture output for debugging.
-    """
     return subprocess.run(command, capture_output=True, text=True)
 
 
@@ -161,7 +167,7 @@ def deploy():
             shutil.rmtree(project_dir)
         project_dir.mkdir(parents=True, exist_ok=True)
 
-        # Create a simple student app
+        # Create project files
         create_project_files(project_dir, project_name_raw, student_name)
 
         # Remove old container if it exists
@@ -173,10 +179,7 @@ def deploy():
         ])
 
         if build_result.returncode != 0:
-            return (
-                f"Build failed:<br><pre>{build_result.stderr}</pre>",
-                500,
-            )
+            return f"Build failed:<br><pre>{build_result.stderr}</pre>", 500
 
         # Run container
         run_result = run_command([
@@ -187,10 +190,10 @@ def deploy():
         ])
 
         if run_result.returncode != 0:
-            return (
-                f"Container run failed:<br><pre>{run_result.stderr}</pre>",
-                500,
-            )
+            return f"Container run failed:<br><pre>{run_result.stderr}</pre>", 500
+
+        # Generate nginx route file
+        create_nginx_route(project_name, assigned_port)
 
         # Save deployment record
         add_deployment(
