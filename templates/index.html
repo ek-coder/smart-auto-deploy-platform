@@ -10,31 +10,17 @@
     <div class="page">
         <div class="hero">
             <h1>Smart Auto Deploy Platform</h1>
-            <p>AWS-first deployment dashboard for student projects</p>
+            <p>Register student applications for cloud deployment</p>
         </div>
 
         <div class="card">
-            <h2>Project Overview</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student</th>
-                        <th>Project</th>
-                        <th>Status</th>
-                        <th>URL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in projects %}
-                    <tr>
-                        <td>{{ item.student }}</td>
-                        <td>{{ item.project }}</td>
-                        <td>{{ item.status }}</td>
-                        <td>{{ item.url }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <h2>Register New Project</h2>
+            <form action="/deploy" method="POST" class="deploy-form">
+                <input type="text" name="student_name" placeholder="Student Name" required>
+                <input type="text" name="project_name" placeholder="Project Name" required>
+                <button type="submit">Register Deployment</button>
+            </form>
+            <a href="/deployments" class="view-link">View Deployment Records</a>
         </div>
     </div>
 </body>

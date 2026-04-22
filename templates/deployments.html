@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Records</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page">
+        <div class="hero">
+            <h1>Deployment Records</h1>
+            <p>Registered applications in the platform</p>
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student</th>
+                        <th>Project</th>
+                        <th>Port</th>
+                        <th>Route</th>
+                        <th>Container</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in deployments %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.student_name }}</td>
+                        <td>{{ item.project_name }}</td>
+                        <td>{{ item.assigned_port }}</td>
+                        <td>{{ item.route_path }}</td>
+                        <td>{{ item.container_name }}</td>
+                        <td>{{ item.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="/" class="view-link">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
