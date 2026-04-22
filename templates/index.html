@@ -18,7 +18,35 @@
             <form action="/deploy" method="POST" class="deploy-form">
                 <input type="text" name="student_name" placeholder="Student Name" required>
                 <input type="text" name="project_name" placeholder="Project Name" required>
-                <button type="submit">Register Deployment</button>
+                <input type="text" name="repo_url" placeholder="GitHub Repository URL" required>
+                <button type="submit">Deploy Project</button>
+            </form>
+            <a href="/deployments" class="view-link">View Deployment Records</a>
+        </div>
+    </div>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Auto Deploy Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page">
+        <div class="hero">
+            <h1>Smart Auto Deploy Platform</h1>
+            <p>Register student applications for cloud deployment</p>
+        </div>
+
+        <div class="card">
+            <h2>Register New Project</h2>
+            <form action="/deploy" method="POST" class="deploy-form">
+                <input type="text" name="student_name" placeholder="Student Name" required>
+                <input type="text" name="project_name" placeholder="Project Name" required>
+                <input type="text" name="repo_url" placeholder="GitHub Repository URL" required>
+                <button type="submit">Deploy Project</button>
             </form>
             <a href="/deployments" class="view-link">View Deployment Records</a>
         </div>
